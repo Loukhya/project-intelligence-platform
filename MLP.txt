@@ -1,0 +1,84 @@
+Developer Project Intelligence Platform
+Minimum Lovable Product (MLP)
+
+1. Purpose
+The purpose of the Minimum Lovable Product (MLP) is to demonstrate the core innovation of the Developer Project Intelligence Platform: a collaborative software engineering environment where human developers and AI agents work together while maintaining complete traceability between requirements, source code, documentation, and a continuously evolving knowledge graph.
+2. Core Philosophy
+Humans remain the decision makers. AI acts as an engineering teammate. Every accepted contribution—whether produced by a human or an AI agent—is analyzed, mapped to project requirements, and reflected in the knowledge graph.
+3. Primary Goal
+Demonstrate the complete workflow:
+1. Create a Requirement
+2. Assign it to either a Human Developer or AI Agent
+3. AI generates implementation
+4. Developer reviews and accepts/rejects changes
+5. Repository is updated
+6. JavaParser analyzes the code
+7. Knowledge Graph updates
+8. Semantic AI labels implementation
+9. Developers query the project using natural language.
+4. Architecture
+Frontend (React/Angular)
+↓
+Spring Boot Backend (System Brain)
+↓
+PostgreSQL + Git Repository + Event Bus
+↓
+JavaParser (Structural Analysis)
+↓
+Knowledge Graph
+↓
+CrewAI (Implementation Agent, Future Review/Test Agents)
+↓
+IDE Plugin (Future)
+5. Spring Boot Responsibilities
+• Project, Feature, Requirement and Task management
+• REST APIs
+• Database operations
+• Git repository management
+• Event orchestration
+• AI Gateway
+• Knowledge graph management
+• Audit logging
+• Authentication and authorization
+6. AI Responsibilities
+CrewAI receives project context from Spring Boot and generates code, documentation or other requested artifacts. AI never directly modifies the repository or database.
+7. AI Code Generation Workflow
+Requirement → Spring Boot → AI Gateway → CrewAI → Generated Files → Developer Review → Repository Update → JavaParser → Knowledge Graph Update → Semantic Analysis
+8. Human Workflow
+Developers continue coding in their IDE. File changes are detected (later via an IDE plugin or Git integration), sent to Spring Boot, parsed using JavaParser, and reflected in the knowledge graph.
+9. Event Driven Architecture
+Events include:
+• RequirementCreated
+• RequirementAssigned
+• CodeGenerated
+• CodeAccepted
+• RepositoryUpdated
+• JavaParsed
+• KnowledgeGraphUpdated
+• SemanticAnalysisCompleted
+10. Knowledge Graph
+Connects:
+Project → Epic → Feature → Requirement → Task → Java Classes → Methods → Tests → Documentation.
+Also maintains dependency relationships such as Controller → Service → Repository and Requirement → Implementation Files.
+11. Project Intelligence Service
+Provides intelligent queries such as:
+• Which files implement REQ-17?
+• Which requirements are incomplete?
+• Which services belong to Authentication?
+• Which documentation is outdated?
+12. Future IDE Integration
+The IDE plugin communicates only with Spring Boot. It displays assigned work, requests AI-generated implementations, receives patches, and keeps the backend synchronized whenever developers modify code.
+13. Definition of Success
+The MLP is successful when a requirement can be created, assigned to AI, implemented, reviewed by a developer, accepted into the repository, parsed automatically, linked into the knowledge graph, and queried successfully by the user.
+14. Future Enhancements
+• Documentation Agent
+• Testing Agent
+• Review Agent
+• Refactoring Agent
+• Architecture Advisor
+• Multi-language parsing
+• Impact analysis
+• Advanced knowledge graph
+• Full IDE integration
+Mission Statement
+The Developer Project Intelligence Platform is an AI-native collaborative software engineering environment where humans remain the decision makers, AI acts as an engineering teammate, and every project artifact—from business requirements to source code—is continuously connected through a living knowledge graph.

@@ -1,0 +1,70 @@
+﻿version: '3.8'
+
+services:
+  # -------------------------------------------------------------
+  # Spring Boot DPIP Backend
+  # -------------------------------------------------------------
+  dpip-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dpip-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-local}
+      - SUPABASE_DB_URL=${SUPABASE_DB_URL:-jdbc:postgresql://postgres:5432/dpip}
+      - SUPABASE_DB_USERNAME=${SUPABASE_DB_USERNAME:-postgres}
+      - SUPABASE_DB_PASSWORD=${SUPABASE_DB_PASSWORD:-postgres}
+      - CREWAI_API_URL=http://dpip-agents:8081
+      - GITHUB_PAT=${GITHUB_PAT:-}
+    depends_on:
+      - postgres
+      - dpip-agents
+    restart: unless-stopped
+    networks:
+      - dpip-network
+
+  # -------------------------------------------------------------
+  # Python CrewAI Agent Service
+  # -------------------------------------------------------------
+  dpip-agents:
+    build:
+      context: ./agents
+      dockerfile: Dockerfile
+    container_name: dpip-agents
+    ports:
+      - "8081:8081"
+    environment:
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OLLAMA_API_URL=${OLLAMA_API_URL:-http://host.docker.internal:11434}
+      - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@postgres:5432/dpip}
+    restart: unless-stopped
+    networks:
+      - dpip-network
+
+  # -------------------------------------------------------------
+  # Local PostgreSQL (with pgvector support for offline intelligence)
+  # -------------------------------------------------------------
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: dpip-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=dpip
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - dpip-network
+
+networks:
+  dpip-network:
+    driver: bridge
+
+volumes:
+  postgres-data:

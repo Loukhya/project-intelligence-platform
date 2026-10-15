@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Developer Project Intelligence Platform (DPIP) Dashboard">
+    <title>DPIP - Developer Project Intelligence Platform</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Google Fonts Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="dark-mode">
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="logo-icon">▲</div>
+                <h1 class="brand-name">DPIP</h1>
+            </div>
+            <nav class="nav-menu">
+                <button class="nav-item active" id="btn-projects" onclick="switchTab('projects')">
+                    <span class="icon">📁</span> Project Setup
+                </button>
+                <button class="nav-item" id="btn-kanban" onclick="switchTab('kanban')">
+                    <span class="icon">📋</span> Work Board
+                </button>
+                <button class="nav-item" id="btn-technologies" onclick="switchTab('technologies')">
+                    <span class="icon">⚙</span> Tech Hub
+                </button>
+                <button class="nav-item" id="btn-search" onclick="switchTab('search')">
+                    <span class="icon">🔍</span> Global Search
+                </button>
+                <button class="nav-item" id="btn-intelligence" onclick="switchTab('intelligence')">
+                    <span class="icon">🧠</span> AI Assistant
+                </button>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="status-indicator">
+                    <span class="dot online"></span>
+                    <span class="status-text">Backend Connected</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Screen 1: Project Setup -->
+            <section id="panel-projects" class="screen-panel active">
+                <header class="panel-header">
+                    <div class="project-selector-wrapper">
+                        <label for="project-select">Active Project: </label>
+                        <select id="project-select" onchange="loadProjectDetails(this.value)">
+                            <option value="">Select a Project...</option>
+                        </select>
+                    </div>
+                    <div class="header-actions flex-row-gap">
+                        <button class="btn btn-primary" onclick="openModal('modal-create-project')">+ Create Project</button>
+                        <button class="btn btn-secondary btn-emerald-dashed" id="btn-seed-project" onclick="triggerSeedSampleProject()">🤖 Seed Sample Project</button>
+                        <button class="btn btn-secondary" id="btn-add-epic" style="display: none;" onclick="openModal('modal-create-epic')">+ Add Epic</button>
+                        <button class="btn btn-secondary" id="btn-add-feature" style="display: none;" onclick="openModal('modal-create-feature')">+ Add Feature</button>
+                        <button class="btn btn-primary" id="btn-scan-codebase" style="display: none;" onclick="triggerProjectScan()">Scan Codebase</button>
+                    </div>
+                </header>
+
+                <div id="project-explorer-content" class="explorer-layout hidden-element">
+                    <!-- Project Info Sidebar -->
+                    <div class="explorer-sidebar">
+                        <div class="glass-card project-summary-card">
+                            <h3 id="explorer-project-name">Project Name</h3>
+                            <p id="explorer-project-desc" class="muted-text">Description</p>
+                            <div class="progress-bar-container">
+                                <label>Progress</label>
+                                <div class="progress-track">
+                                    <div id="explorer-project-progress" class="progress-fill"></div>
+                                </div>
+                                <span id="explorer-project-progress-txt" class="progress-txt">0%</span>
+                            </div>
+                            <div class="project-metadata">
+                                <div><strong>Difficulty:</strong> <span id="explorer-project-difficulty">Advanced</span></div>
+                                <div><strong>Category:</strong> <span id="explorer-project-category">Cloud</span></div>
+                                <div><strong>Status:</strong> <span id="explorer-project-status">Idea</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Vision Card -->
+                        <div class="glass-card vision-card">
+                            <div class="card-header-row">
+                                <h3>Project Vision</h3>
+                                <button class="btn-icon" onclick="openEditVisionModal()">✎</button>
+                            </div>
+                            <p id="explorer-project-vision" class="vision-statement">No vision statement set. Click edit to set one.</p>
+                        </div>
+
+                        <!-- Codebase Map Card -->
+                        <div class="glass-card codebase-stats-card margin-top-20">
+                            <div class="card-header-row">
+                                <h3>Codebase Map</h3>
+                             </div>
+                            <div class="project-metadata">
+                                <div><strong>Classes Scanned:</strong> <span id="stats-classes-count">0</span></div>
+                                <div><strong>Methods Scanned:</strong> <span id="stats-methods-count">0</span></div>
+                                <div><strong>Active Mappings:</strong> <span id="stats-mappings-count">0</span></div>
+                            </div>
+                            <div id="stats-mappings-list" class="mappings-list-container">
+                                <!-- Mappings summaries -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Epics & Features Main Column -->
+                    <div class="explorer-main">
+                        <!-- Project Sub-Tabs -->
+                        <div class="project-tabs-container">
+                            <button class="project-tab-btn active-tab" id="project-tab-planning" onclick="switchProjectSubTab('planning')">📋 Planning & Code Map</button>
+                            <button class="project-tab-btn" id="project-tab-github" onclick="switchProjectSubTab('github')">🐙 GitHub Workspace</button>
+                        </div>
+
+                        <!-- Sub-Tab 1: Planning (Original Hierarchy/Requirements) -->
+                        <div id="project-planning-content" class="explorer-content-wrapper">
+                            <div class="explorer-hierarchy-column">
+                                <h3>Hierarchy</h3>
+                                <div id="epics-list" class="epics-list">
+                                    <!-- Epics and Features nested items injected here -->
+                                </div>
+                            </div>
+                            <div class="explorer-requirements-column" id="requirements-panel" style="display: none;">
+                                <div class="card-header-row">
+                                    <h3 id="selected-feature-title">Feature Requirements</h3>
+                                    <button class="btn btn-primary" onclick="showQuickAddReqForm()">+ Quick Add Req</button>
+                                </div>
+                                
+                                <!-- Quick Add Requirement Inline Form -->
+                                <div id="quick-add-req-container" class="glass-card hidden-element" style="margin-bottom: 20px; padding: 16px;">
+                                    <h4>Quick Add Requirement</h4>
+                                    <form onsubmit="handleQuickCreateRequirement(event)" style="margin-top: 10px;">
+                                        <input type="hidden" id="q-req-feature-id">
+                                        <div class="form-group">
+                                            <label for="q-req-title">Requirement Title *</label>
+                                            <input type="text" id="q-req-title" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="q-req-desc">Description</label>
+                                            <textarea id="q-req-desc" rows="2"></textarea>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="q-req-complexity">Complexity *</label>
+                                                <select id="q-req-complexity" required>
+                                                    <option value="LOW">Low</option>
+                                                    <option value="MEDIUM" selected>Medium</option>
+                                                    <option value="HIGH">High</option>
+                                                    <option value="VERY_HIGH">Very High</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="q-req-priority">Priority *</label>
+                                                <select id="q-req-priority" required>
+                                                    <option value="LOW">Low</option>
+                                                    <option value="MEDIUM" selected>Medium</option>
+                                                    <option value="HIGH">High</option>
+                                                    <option value="CRITICAL">Critical</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="q-req-effort">Estimated Effort (Story points)</label>
+                                            <input type="number" id="q-req-effort" step="0.5" min="0">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="q-req-notes">Notes</label>
+                                            <textarea id="q-req-notes" rows="2"></textarea>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="q-req-story">User Story (Optional)</label>
+                                            <textarea id="q-req-story" rows="2" placeholder="As a [user], I want [capability], So that [benefit]"></textarea>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="q-req-acceptance">Acceptance Criteria (Optional)</label>
+                                            <textarea id="q-req-acceptance" rows="2" placeholder="Describe the validation rules/criteria..."></textarea>
+                                        </div>
+                                        <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px;">
+                                            <button type="button" class="btn btn-secondary" onclick="hideQuickAddReqForm()">Cancel</button>
+                                            <button type="submit" class="btn btn-primary">Create</button>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <div id="requirements-list-container" class="requirements-list">
+                                    <!-- Feature requirements rendered dynamically -->
+                                </div>
+                            </div>
+                            <div class="explorer-requirements-column-empty" id="requirements-panel-empty">
+                                <p class="muted-text" style="text-align: center; margin-top: 100px; font-style: italic;">Select a feature from the hierarchy to view its requirements details.</p>
+                            </div>
+                        </div>
+
+                        <!-- Sub-Tab 2: GitHub Workspace -->
+                        <div id="project-github-content" class="explorer-content-wrapper" style="display: none;">
+                            <!-- Connection View (Left side or Full depending on connection status) -->
+                            <div class="explorer-hierarchy-column" id="github-connection-sidebar">
+                                <h3>GitHub Connection</h3>
+                                <div id="github-pat-status-indicator" style="margin-top: 12px; margin-bottom: 20px;">
+                                    <!-- Dynamic connection state -->
+                                </div>
+
+                                <div id="github-connect-form-container" class="hidden-element">
+                                    <h4 style="margin-bottom: 12px;">Link Repository</h4>
+                                    <div class="form-group">
+                                        <label for="github-repo-select">Select Existing Private Repository</label>
+                                        <select id="github-repo-select" style="width: 100%; margin-top: 6px; padding: 8px;">
+                                            <option value="">Choose a repo...</option>
+                                        </select>
+                                    </div>
+                                    <div style="text-align: center; margin: 15px 0; color: var(--text-secondary); font-size: 13px;">— OR —</div>
+                                    <div class="form-group">
+                                        <label for="github-new-repo-name">Create New Private Repository</label>
+                                        <input type="text" id="github-new-repo-name" placeholder="e.g. project-repo-name" style="width: 100%; margin-top: 6px; padding: 8px;">
+                                    </div>
+                                    <button class="btn btn-primary" onclick="handleGitHubConnect()" style="width: 100%; margin-top: 16px;">Connect Project</button>
+                                </div>
+
+                                <div id="github-connected-actions" class="hidden-element" style="display: flex; flex-direction: column; gap: 20px;">
+                                    <!-- Quick Branch creation from active tasks -->
+                                    <div class="glass-card" style="padding: 16px;">
+                                        <h4>Create New Branch</h4>
+                                        <form onsubmit="handleCreateBranch(event)" style="margin-top: 10px; display: flex; flex-direction: column; gap: 10px;">
+                                            <div class="form-group">
+                                                <label for="github-branch-input">Branch Name</label>
+                                                <input type="text" id="github-branch-input" placeholder="feature/your-branch" required>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary" style="width: 100%;">Create Branch</button>
+                                        </form>
+                                    </div>
+
+                                    <!-- Quick Pull Request creation -->
+                                    <div class="glass-card" style="padding: 16px;">
+                                        <h4>Create Pull Request</h4>
+                                        <form onsubmit="handleCreatePR(event)" style="margin-top: 10px; display: flex; flex-direction: column; gap: 10px;">
+                                            <div class="form-group">
+                                                <label for="github-pr-title">PR Title *</label>
+                                                <input type="text" id="github-pr-title" placeholder="Implement factorial logic" required>
+                                            </div>
+                                            <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                                <div class="form-group">
+                                                    <label for="github-pr-head">Compare (Head)</label>
+                                                    <select id="github-pr-head" required>
+                                                        <option value="">Compare Branch</option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="github-pr-base">Base Branch</label>
+                                                    <input type="text" id="github-pr-base" value="main" required>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="github-pr-body">PR Description</label>
+                                                <textarea id="github-pr-body" rows="3" placeholder="Describe the changes made..."></textarea>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary" style="width: 100%;">Open Pull Request</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- GitHub Dashboard Lists (Right side) -->
+                            <div class="explorer-requirements-column" id="github-dashboard-column">
+                                <div id="github-dashboard-unlinked" class="explorer-requirements-column-empty">
+                                    <p class="muted-text" style="text-align: center; margin-top: 100px; font-style: italic;">Connect your project to GitHub to view commits, branches, and PR activities.</p>
+                                </div>
+
+                                <div id="github-dashboard-linked" class="hidden-element">
+                                    <div class="github-dashboard-grid">
+                                        <!-- Recent Commits -->
+                                        <div class="github-section-card">
+                                            <h3>Recent Commits</h3>
+                                            <div id="github-commits-list" class="github-list">
+                                                <!-- Commits list items injected dynamically -->
+                                            </div>
+                                        </div>
+
+                                        <!-- Branches & Pull Requests -->
+                                        <div class="github-section-card">
+                                            <h3>Active Branches</h3>
+                                            <div id="github-branches-list" class="github-list" style="margin-bottom: 20px;">
+                                                <!-- Branches list items injected dynamically -->
+                                            </div>
+
+                                            <h3>Pull Requests</h3>
+                                            <div id="github-pulls-list" class="github-list">
+                                                <!-- PRs list items injected dynamically -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="project-explorer-empty" class="explorer-empty-dashboard">
+                    <h3 style="margin-bottom: 20px;">Active Projects Overview</h3>
+                    <div id="projects-list" class="grid-container">
+                        <!-- Projects list items injected here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Screen 3: Kanban Board -->
+            <section id="panel-kanban" class="screen-panel">
+                <header class="panel-header">
+                    <div class="kanban-selectors">
+                        <div class="project-selector-wrapper">
+                            <label for="kanban-project-select">Project: </label>
+                            <select id="kanban-project-select" onchange="loadKanbanData(this.value)">
+                                <option value="">Select Project...</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" style="display: none;" id="btn-add-task" onclick="openModal('modal-create-task')">+ Add Task</button>
+                </header>
+
+                <div id="kanban-board-content" class="kanban-layout hidden-element">
+                    <!-- Left features list panel -->
+                    <div class="kanban-features-sidebar glass-card">
+                        <h4>Features Filter</h4>
+                        <div id="kanban-features-list" class="kanban-features-list">
+                            <!-- Features with status badges will be dynamically rendered here -->
+                        </div>
+                    </div>
+
+                    <!-- Kanban Board Columns -->
+                    <div class="kanban-board">
+                        <div class="kanban-column" id="col-BACKLOG">
+                            <div class="column-header">Backlog <span class="badge" id="badge-BACKLOG">0</span></div>
+                            <div class="task-list" id="list-BACKLOG"></div>
+                        </div>
+                        <div class="kanban-column" id="col-PLANNING">
+                            <div class="column-header">Planning <span class="badge" id="badge-PLANNING">0</span></div>
+                            <div class="task-list" id="list-PLANNING"></div>
+                        </div>
+                        <div class="kanban-column" id="col-IN_PROGRESS">
+                            <div class="column-header">In Progress <span class="badge" id="badge-IN_PROGRESS">0</span></div>
+                            <div class="task-list" id="list-IN_PROGRESS"></div>
+                        </div>
+                        <div class="kanban-column" id="col-TESTING">
+                            <div class="column-header">Testing <span class="badge" id="badge-TESTING">0</span></div>
+                            <div class="task-list" id="list-TESTING"></div>
+                        </div>
+                        <div class="kanban-column" id="col-COMPLETED">
+                            <div class="column-header">Completed <span class="badge" id="badge-COMPLETED">0</span></div>
+                            <div class="task-list" id="list-COMPLETED"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Inline Code Review Panel -->
+                <div id="review-content" class="review-layout hidden-element margin-top-20">
+                    <div class="review-main">
+                        <div class="glass-card flex-column-gap">
+                            <div class="card-header-row">
+                                <h3 id="review-file-path">Source File: path/to/file.java</h3>
+                                <div class="header-actions flex-row-gap">
+                                    <button class="btn btn-secondary" onclick="verifyCandidateCode()">Verify Compilation</button>
+                                    <button class="btn btn-secondary btn-emerald-dashed" onclick="runCandidateTests()">🧪 Run Unit Tests</button>
+                                    <button class="btn btn-primary" onclick="approveCandidateCode()">Approve & Merge</button>
+                                    <button class="btn btn-danger" onclick="rejectCandidateCode()">Reject</button>
+                                    <button class="btn btn-secondary" onclick="closeInlineReview()">Close Review</button>
+                                </div>
+                            </div>
+                            <div class="diff-container margin-top-16">
+                                <div class="diff-pane">
+                                    <h4>Original Code</h4>
+                                    <pre><code id="diff-original">Original code here...</code></pre>
+                                </div>
+                                <div class="diff-pane">
+                                    <h4>AI Proposed Code</h4>
+                                    <pre><code id="diff-proposed">Proposed code here...</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="review-sidebar">
+                        <div class="glass-card" style="margin-bottom: 20px;">
+                            <h3>Awaiting Review Queue</h3>
+                            <div id="pending-reviews-queue" class="pending-queue-container" style="max-height: 150px; overflow-y: auto; margin-top: 10px;">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                        <div class="glass-card">
+                            <h3>Compilation Logs</h3>
+                            <pre class="log-output" id="verification-log">No compilation logs yet. Click 'Verify Compilation' to run Maven check.</pre>
+                        </div>
+                        <div class="glass-card margin-top-20">
+                            <h3>Test Suite Results</h3>
+                            <div id="test-suite-badges" class="margin-top-12 flex-row-gap test-suite-badges-container">
+                                <span class="badge badge-low" id="badge-tests-run">Run: 0</span>
+                                <span class="badge badge-medium badge-tests-passed-custom" id="badge-tests-passed">Passed: 0</span>
+                                <span class="badge badge-critical" id="badge-tests-failed">Failed: 0</span>
+                            </div>
+                            <pre class="log-output margin-top-12 test-execution-log-custom" id="test-execution-log">No test run logs yet. Click 'Run Unit Tests' to execute candidate test suite.</pre>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="kanban-board-empty" class="empty-state">
+                    <p>Please select a Project to view its Kanban board.</p>
+                </div>
+            </section>
+
+            <!-- Screen 4: Technology Hub -->
+            <section id="panel-technologies" class="screen-panel">
+                <header class="panel-header">
+                    <h2>Technology Hub</h2>
+                    <button class="btn btn-primary" onclick="openModal('modal-create-tech')">+ Add Technology</button>
+                </header>
+                <div class="grid-container" id="tech-list">
+                    <!-- Technologies injected here -->
+                </div>
+            </section>
+
+            <!-- Screen 6: Search & Filter Hub -->
+            <section id="panel-search" class="screen-panel">
+                <header class="panel-header">
+                    <h2>Global Search & Filter Hub</h2>
+                </header>
+
+                <div class="search-workspace-container">
+                    <!-- Left: Filters Sidebar -->
+                    <div class="search-filters-sidebar glass-card">
+                        <h3>Search Filters</h3>
+
+                        <div class="filter-group">
+                            <label class="filter-label">Completion State</label>
+                            <div class="radio-group-vertical">
+                                <label class="radio-label">
+                                    <input type="radio" name="search-completion" value="" checked onchange="triggerGlobalSearch()"> All Items
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="search-completion" value="INCOMPLETE" onchange="triggerGlobalSearch()"> Incomplete Only
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="search-completion" value="COMPLETED" onchange="triggerGlobalSearch()"> Completed Only
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="filter-group">
+                            <label class="filter-label">Priority</label>
+                            <div class="checkbox-group-vertical" id="search-priority-filters">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" value="LOW" onchange="triggerGlobalSearch()"> Low
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" value="MEDIUM" onchange="triggerGlobalSearch()"> Medium
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" value="HIGH" onchange="triggerGlobalSearch()"> High
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="filter-group">
+                            <label class="filter-label">Status</label>
+                            <div class="checkbox-group-vertical" id="search-status-filters">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" value="IDEA" onchange="triggerGlobalSearch()"> Idea / Backlog
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" value="PLANNING" onchange="triggerGlobalSearch()"> Planning
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" value="IN_PROGRESS" onchange="triggerGlobalSearch()"> In Progress
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" value="TESTING" onchange="triggerGlobalSearch()"> Testing
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" value="COMPLETED" onchange="triggerGlobalSearch()"> Completed
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="filter-group">
+                            <button class="btn btn-secondary btn-sm btn-block" onclick="resetSearchFilters()">Clear Filters</button>
+                        </div>
+                    </div>
+
+                    <!-- Right: Search Bar & Results -->
+                    <div class="search-results-main">
+                        <div class="search-bar-wrapper">
+                            <input type="text" id="global-search-input" placeholder="Search projects, epics, features, requirements, tasks, or tech..." oninput="handleGlobalSearchInput(this.value)">
+                        </div>
+
+                        <div id="search-results-container" class="search-results-container">
+                            <div class="search-empty-state">
+                                <span class="search-empty-icon">🔍</span>
+                                <p class="muted-text">Type in the search bar to query the workspace entities.</p>
+                            </div>
+                        </div>
+                </div>
+            </section>
+
+            <!-- Screen 7: Project Intelligence Chat Hub & Graph -->
+            <section id="panel-intelligence" class="screen-panel">
+                <header class="panel-header">
+                    <h2>Project Intelligence AI Assistant</h2>
+                    <div class="project-selector-wrapper">
+                        <label for="intelligence-project-select">Active Project: </label>
+                        <select id="intelligence-project-select" onchange="handleIntelligenceProjectChange(this.value)">
+                            <option value="">Select a Project...</option>
+                        </select>
+                    </div>
+                </header>
+
+                <div class="intelligence-workspace-container">
+                    <!-- Left: Knowledge Graph Column -->
+                    <div class="intelligence-graph-column glass-card">
+                        <!-- Floating Control Panel -->
+                        <div class="graph-controls-floating">
+                            <div class="graph-controls-title">Filters</div>
+                            
+                            <div class="graph-layer-options">
+                                <label class="graph-layer-label">
+                                    <input type="checkbox" id="filter-epics" checked onchange="toggleGraphLayer('EPIC', this.checked)"> Epics & Features
+                                </label>
+                                <label class="graph-layer-label">
+                                    <input type="checkbox" id="filter-reqs" checked onchange="toggleGraphLayer('REQUIREMENT', this.checked)"> Requirements
+                                </label>
+                                <label class="graph-layer-label">
+                                    <input type="checkbox" id="filter-tasks" checked onchange="toggleGraphLayer('TASK', this.checked)"> Tasks
+                                </label>
+                                <label class="graph-layer-label">
+                                    <input type="checkbox" id="filter-classes" checked onchange="toggleGraphLayer('CLASS', this.checked)"> Java Classes
+                                </label>
+                                <label class="graph-layer-label">
+                                    <input type="checkbox" id="filter-methods" checked onchange="toggleGraphLayer('METHOD', this.checked)"> Java Methods
+                                </label>
+                            </div>
+
+                            <div class="graph-reset-container">
+                                <button class="btn btn-secondary btn-sm graph-reset-btn" onclick="resetGraphView()">Reset View</button>
+                            </div>
+                        </div>
+
+                        <!-- Legend -->
+                        <div class="graph-legend-card">
+                            <div class="graph-legend-title">Legend</div>
+                            <div class="graph-legend-grid">
+                                <div class="graph-legend-item"><span class="legend-dot project-dot"></span> Project</div>
+                                <div class="graph-legend-item"><span class="legend-dot epic-dot"></span> Epic</div>
+                                <div class="graph-legend-item"><span class="legend-dot feature-dot"></span> Feature</div>
+                                <div class="graph-legend-item"><span class="legend-dot requirement-dot"></span> Req</div>
+                                <div class="graph-legend-item"><span class="legend-dot task-dot"></span> Task</div>
+                                <div class="graph-legend-item"><span class="legend-dot class-dot"></span> Class</div>
+                                <div class="graph-legend-item"><span class="legend-dot method-dot"></span> Method</div>
+                            </div>
+                        </div>
+
+                        <!-- Main Graph Canvas -->
+                        <canvas id="graph-canvas" class="graph-canvas"></canvas>
+
+                        <!-- Interactive Slide-Out Drawer Pane -->
+                        <div id="graph-details-panel" class="graph-details-panel hidden-element">
+                            <!-- Details injected here -->
+                        </div>
+                    </div>
+
+                    <!-- Draggable Splitter Bar -->
+                    <div class="intelligence-splitter" id="intelligence-splitter"></div>
+
+                    <!-- Right: AI Chat Assistant Column -->
+                    <div class="chat-main-column glass-card">
+                        <!-- Chat message bubbles -->
+                        <div id="chat-messages-container" class="chat-messages-container">
+                            <div class="chat-system-message">
+                                <span class="ai-avatar">🧠</span>
+                                <div class="message-bubble">
+                                    <p>Hello! I am your DPIP AI Assistant. Select a project above and ask me anything about its requirements, task progress, implementation code files, or architectural decisions!</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Thinking loader indicator (hidden by default) -->
+                        <div id="chat-thinking-indicator" class="chat-thinking-indicator hidden-element">
+                            <span class="thinking-dot"></span>
+                            <span class="thinking-dot"></span>
+                            <span class="thinking-dot"></span>
+                            <span class="thinking-text">AI is compiling project graph context...</span>
+                        </div>
+
+                        <!-- Presets suggestion chips -->
+                        <div class="chat-suggestions-container">
+                            <button class="suggestion-chip" onclick="sendPresetQuery('What is the overall completion progress of this project?')">📈 Show overall progress</button>
+                            <button class="suggestion-chip" onclick="sendPresetQuery('Which files/methods implement the core requirements?')">🔍 Locate implementation files</button>
+                            <button class="suggestion-chip" onclick="sendPresetQuery('What are the open high-priority tasks?')">⏳ Open high-priority tasks</button>
+                            <button class="suggestion-chip" onclick="sendPresetQuery('What architectural decisions have been made so far?')">🔧 Review tech decisions</button>
+                        </div>
+
+                        <!-- Input form bar -->
+                        <form id="chat-input-form" onsubmit="handleSendChatMessage(event)" class="chat-input-wrapper">
+                            <input type="text" id="chat-user-input" placeholder="Ask AI about codebase methods, epics, open tasks, or requirements..." required autocomplete="off">
+                            <button type="submit" class="btn btn-primary">Send</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals Section -->
+    <!-- Modal 1: Create Project -->
+    <div id="modal-create-project" class="modal">
+        <div class="modal-content glass-card">
+            <header class="modal-header">
+                <h3>Create New Project</h3>
+                <button class="close-btn" onclick="closeModal('modal-create-project')">&times;</button>
+            </header>
+            <form onsubmit="handleCreateProject(event)">
+                <div class="form-group">
+                    <label for="p-name">Project Name *</label>
+                    <input type="text" id="p-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="p-desc">Description</label>
+                    <textarea id="p-desc" rows="3"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="p-category">Category *</label>
+                        <input type="text" id="p-category" placeholder="e.g. Cloud, Mobile" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="p-difficulty">Difficulty *</label>
+                        <select id="p-difficulty" required>
+                            <option value="BEGINNER">Beginner</option>
+                            <option value="INTERMEDIATE">Intermediate</option>
+                            <option value="ADVANCED">Advanced</option>
+                            <option value="EXPERT">Expert</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="p-start">Start Date</label>
+                        <input type="date" id="p-start">
+                    </div>
+                    <div class="form-group">
+                        <label for="p-target">Target Completion Date</label>
+                        <input type="date" id="p-target">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="p-vision">Vision Statement</label>
+                    <textarea id="p-vision" rows="2" placeholder="Describe the ultimate vision for this project..."></textarea>
+                </div>
+                <footer class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('modal-create-project')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create</button>
+                </footer>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 2: Edit Vision -->
+    <div id="modal-edit-vision" class="modal">
+        <div class="modal-content glass-card">
+            <header class="modal-header">
+                <h3>Update Project Vision</h3>
+                <button class="close-btn" onclick="closeModal('modal-edit-vision')">&times;</button>
+            </header>
+            <form onsubmit="handleUpdateVision(event)">
+                <div class="form-group">
+                    <label for="v-statement">Vision Statement *</label>
+                    <textarea id="v-statement" rows="5" required></textarea>
+                </div>
+                <footer class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('modal-edit-vision')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </footer>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 3: Create Epic -->
+    <div id="modal-create-epic" class="modal">
+        <div class="modal-content glass-card">
+            <header class="modal-header">
+                <h3>Add Epic</h3>
+                <button class="close-btn" onclick="closeModal('modal-create-epic')">&times;</button>
+            </header>
+            <form onsubmit="handleCreateEpic(event)">
+                <div class="form-group">
+                    <label for="e-name">Epic Name *</label>
+                    <input type="text" id="e-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="e-desc">Description</label>
+                    <textarea id="e-desc" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="e-priority">Priority *</label>
+                    <select id="e-priority" required>
+                        <option value="LOW">Low</option>
+                        <option value="MEDIUM" selected>Medium</option>
+                        <option value="HIGH">High</option>
+                        <option value="CRITICAL">Critical</option>
+                    </select>
+                </div>
+                <footer class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('modal-create-epic')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create</button>
+                </footer>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 4: Create Feature -->
+    <div id="modal-create-feature" class="modal">
+        <div class="modal-content glass-card">
+            <header class="modal-header">
+                <h3>Add Feature</h3>
+                <button class="close-btn" onclick="closeModal('modal-create-feature')">&times;</button>
+            </header>
+            <form onsubmit="handleCreateFeature(event)">
+                <div class="form-group">
+                    <label for="f-epic">Epic *</label>
+                    <select id="f-epic" required></select>
+                </div>
+                <div class="form-group">
+                    <label for="f-name">Feature Name *</label>
+                    <input type="text" id="f-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="f-desc">Description</label>
+                    <textarea id="f-desc" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="f-priority">Priority *</label>
+                    <select id="f-priority" required>
+                        <option value="LOW">Low</option>
+                        <option value="MEDIUM" selected>Medium</option>
+                        <option value="HIGH">High</option>
+                        <option value="CRITICAL">Critical</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Dependencies (Optional)</label>
+                    <div id="dependency-checklist" class="checkbox-checklist">
+                        <!-- Checklist elements injected here -->
+                    </div>
+                </div>
+                <footer class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('modal-create-feature')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create</button>
+                </footer>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 5: Create Requirement -->
+    <div id="modal-create-req" class="modal">
+        <div class="modal-content glass-card">
+            <header class="modal-header">
+                <h3>Add Requirement</h3>
+                <button class="close-btn" onclick="closeModal('modal-create-req')">&times;</button>
+            </header>
+            <form onsubmit="handleCreateRequirement(event)">
+                <input type="hidden" id="req-feature-id">
+                <div class="form-group">
+                    <label for="req-title">Requirement Title *</label>
+                    <input type="text" id="req-title" required>
+                </div>
+                <div class="form-group">
+                    <label for="req-desc">Description</label>
+                    <textarea id="req-desc" rows="2"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="req-complexity">Complexity *</label>
+                        <select id="req-complexity" required>
+                            <option value="LOW">Low</option>
+                            <option value="MEDIUM" selected>Medium</option>
+                            <option value="HIGH">High</option>
+                            <option value="VERY_HIGH">Very High</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="req-priority">Priority *</label>
+                        <select id="req-priority" required>
+                            <option value="LOW">Low</option>
+                            <option value="MEDIUM" selected>Medium</option>
+                            <option value="HIGH">High</option>
+                            <option value="CRITICAL">Critical</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="req-effort">Estimated Effort (Story points)</label>
+                    <input type="number" id="req-effort" step="0.5" min="0">
+                </div>
+                <div class="form-group">
+                    <label for="req-notes">Notes</label>
+                    <textarea id="req-notes" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="req-story">User Story (Optional)</label>
+                    <textarea id="req-story" rows="2" placeholder="As a [user], I want [capability], So that [benefit]"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="req-acceptance">Acceptance Criteria (Optional)</label>
+                    <textarea id="req-acceptance" rows="2" placeholder="Describe the validation rules/criteria..."></textarea>
+                </div>
+                <footer class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('modal-create-req')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create</button>
+                </footer>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 6: Create Task -->
+    <div id="modal-create-task" class="modal">
+        <div class="modal-content glass-card">
+            <header class="modal-header">
+                <h3>Add Task</h3>
+                <button class="close-btn" onclick="closeModal('modal-create-task')">&times;</button>
+            </header>
+            <form onsubmit="handleCreateTask(event)">
+                <div class="form-group">
+                    <label for="t-title">Task Title *</label>
+                    <input type="text" id="t-title" required>
+                </div>
+                <div class="form-group">
+                    <label for="t-feature">Feature *</label>
+                    <select id="t-feature" required onchange="populateRequirementsForTaskFeature(this.value)">
+                        <option value="">Select Feature...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="t-requirement">Linked Requirement *</label>
+                    <select id="t-requirement" required>
+                        <option value="">Select Requirement...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="t-desc">Description</label>
+                    <textarea id="t-desc" rows="3"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="t-priority">Priority *</label>
+                        <select id="t-priority" required>
+                            <option value="LOW">Low</option>
+                            <option value="MEDIUM" selected>Medium</option>
+                            <option value="HIGH">High</option>
+                            <option value="CRITICAL">Critical</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="t-estimated">Estimated Hours</label>
+                        <input type="number" id="t-estimated" step="0.5" min="0" required>
+                    </div>
+                </div>
+                <footer class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('modal-create-task')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create</button>
+                </footer>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 7: Create Tech -->
+    <div id="modal-create-tech" class="modal">
+        <div class="modal-content glass-card">
+            <header class="modal-header">
+                <h3>Add Technology</h3>
+                <button class="close-btn" onclick="closeModal('modal-create-tech')">&times;</button>
+            </header>
+            <form onsubmit="handleCreateTech(event)">
+                <div class="form-group">
+                    <label for="tech-name">Technology Name *</label>
+                    <input type="text" id="tech-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="tech-category">Category *</label>
+                    <select id="tech-category" required>
+                        <option value="BACKEND">Backend</option>
+                        <option value="FRONTEND">Frontend</option>
+                        <option value="DATABASE">Database</option>
+                        <option value="MESSAGING">Messaging</option>
+                        <option value="CLOUD">Cloud</option>
+                        <option value="DEVOPS">DevOps</option>
+                        <option value="SECURITY">Security</option>
+                        <option value="AI_ML">AI/ML</option>
+                        <option value="TESTING">Testing</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="tech-desc">Description</label>
+                    <textarea id="tech-desc" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="tech-doc">Official Documentation URL</label>
+                    <input type="url" id="tech-doc" placeholder="https://example.com">
+                </div>
+                <div class="form-group">
+                    <label for="tech-notes">Notes</label>
+                    <textarea id="tech-notes" rows="2"></textarea>
+                </div>
+                <footer class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('modal-create-tech')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create</button>
+                </footer>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 8: Select Tech Decision -->
+    <div id="modal-select-decision" class="modal">
+        <div class="modal-content glass-card">
+            <header class="modal-header">
+                <h3>Select Technology Decision</h3>
+                <button class="close-btn" onclick="closeModal('modal-select-decision')">&times;</button>
+            </header>
+            <form onsubmit="handleSelectDecision(event)">
+                <input type="hidden" id="dec-req-id">
+                <div class="form-group">
+                    <label for="dec-tech-select">Technology *</label>
+                    <select id="dec-tech-select" required></select>
+                </div>
+                <div class="form-group">
+                    <label for="dec-why">Why Selected *</label>
+                    <textarea id="dec-why" rows="3" placeholder="Provide architectural reasoning..." required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="dec-advantages">Advantages</label>
+                    <textarea id="dec-advantages" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="dec-tradeoffs">Tradeoffs</label>
+                    <textarea id="dec-tradeoffs" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="dec-notes">Notes</label>
+                    <textarea id="dec-notes" rows="2"></textarea>
+                </div>
+                <footer class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('modal-select-decision')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Select & Resolve</button>
+                </footer>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 9: Task Actions (Update, Transition, Audit Logs) -->
+    <div id="modal-task-actions" class="modal">
+        <div class="modal-content glass-card task-action-content">
+            <header class="modal-header">
+                <h3 id="task-action-title">Task Actions</h3>
+                <button class="close-btn" onclick="closeModal('modal-task-actions')">&times;</button>
+            </header>
+            <div class="task-action-grid">
+                <!-- Left panel: Actions form -->
+                <div class="task-action-form-panel">
+                    <form onsubmit="handleTransitionTask(event)">
+                        <input type="hidden" id="action-task-id">
+                        <div class="form-group">
+                            <label for="action-status">Transition to Status *</label>
+                            <select id="action-status" required>
+                                <option value="BACKLOG">Backlog</option>
+                                <option value="PLANNING">Planning</option>
+                                <option value="IN_PROGRESS">In Progress</option>
+                                <option value="TESTING">Testing</option>
+                                <option value="COMPLETED">Completed</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="action-hours">Logged Actual Hours</label>
+                            <input type="number" id="action-hours" step="0.1" min="0">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Update Task</button>
+                        
+                        <div class="form-actions-divider margin-top-20 actions-divider-custom"></div>
+                        <div class="form-group">
+                            <label>AI Developer Delegation</label>
+                            <p class="muted-text muted-text-desc-custom">Delegate implementation of this task to the autonomous AI Developer. It will generate matching Java code and Javadoc requirement annotations.</p>
+                            <button type="button" class="btn btn-secondary btn-ai-dashed" id="btn-assign-ai" onclick="triggerAssignAi()">🤖 Assign AI Agent</button>
+                        </div>
+                    </form>
+                </div>
+                <!-- Right panel: Audit Logs -->
+                <div class="task-action-audit-panel">
+                    <h4>State Change Audit Logs</h4>
+                    <div id="task-audit-logs" class="audit-logs-container">
+                        <!-- Audit logs injected here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 10: Tech Candidates Checklist -->
+    <div id="modal-tech-candidates" class="modal">
+        <div class="modal-content glass-card">
+            <header class="modal-header">
+                <h3>Select Technology Candidates</h3>
+                <button class="close-btn" onclick="closeModal('modal-tech-candidates')">&times;</button>
+            </header>
+            <form onsubmit="handleSaveCandidates(event)">
+                <input type="hidden" id="cand-req-id">
+                <div class="form-group">
+                    <label>Technologies</label>
+                    <div id="tech-candidates-checklist" class="checkbox-checklist">
+                        <!-- Technologies injected here -->
+                    </div>
+                </div>
+                <footer class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('modal-tech-candidates')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Candidates</button>
+                </footer>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 11: Requirement Code Area Visualizer -->
+    <div id="modal-view-code-area" class="modal">
+        <div class="modal-content glass-card modal-wide">
+            <header class="modal-header">
+                <h3 id="code-area-modal-title">Requirement Code Area</h3>
+                <button class="close-btn" onclick="closeModal('modal-view-code-area')">&times;</button>
+            </header>
+            <div class="form-group">
+                <label for="code-area-depth">Expansion Depth (Call Graph Graph):</label>
+                <div class="flex-row-gap">
+                    <select id="code-area-depth" class="width-120" onchange="reloadCodeArea()">
+                        <option value="0">0 (Direct Only)</option>
+                        <option value="1">1 Step (Callers/Callees)</option>
+                        <option value="2" selected>2 Steps (Transitive)</option>
+                        <option value="3">3 Steps (Full Area)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="margin-top-16">
+                <label>Mapped Classes & Methods (Code Subgraph)</label>
+                <div id="code-area-list" class="checkbox-checklist code-area-container">
+                    <!-- Code area nodes injected here -->
+                </div>
+            </div>
+            <footer class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('modal-view-code-area')">Close</button>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Application Script -->
+    <script src="app.js?v=2"></script>
+</body>
+</html>
